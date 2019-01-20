@@ -36,6 +36,10 @@ public:
 	glm::vec3 Up;
 	glm::vec3 Right;
 	glm::vec3 WorldUp;
+	//Car
+	glm::vec3 CarPosition;
+	float CarYaw;
+	glm::vec3 CarFront;
 	// Euler Angles
 	float Yaw;
 	float Pitch;
@@ -49,10 +53,13 @@ public:
 	CarCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY)
 	{
 		Position = position;
+		CarPosition = position;
 		WorldUp = up;
 		Yaw = yaw;
+		CarYaw = yaw;
 		Pitch = pitch;
 		updateCameraVectors();
+		updateCarFront();
 	}
 	// Constructor with scalar values
 	//CarCamera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY)
@@ -77,24 +84,27 @@ public:
 		float velocity = MovementSpeed * deltaTime;
 		float rvelocity = ROTATIONSPEED * deltaTime;
 		if (direction == FORWARD) {
-			Position += Front * velocity;
+			Position += CarFront * velocity;
 		}	
 		if (direction == BACKWARD) {
-			Position -= Front * velocity;
+			Position -= CarFront * velocity;
+			
 		}
-	/*	if (direction == LEFT) {
-			Yaw -= rvelocity;
-			updateCameraVectors();
+		if (direction == LEFT) {
+			CarYaw -= rvelocity;
+			updateCarFront();
+			//updateCameraVectors();
 		}
 		if (direction == RIGHT) {
-			Yaw += rvelocity;
-			updateCameraVectors();
-		}*/
+			CarYaw += rvelocity;
+			updateCarFront();
+			//updateCameraVectors();
+		}
 		
-		if (direction == LEFT)
+	/*	if (direction == LEFT)
 			Position -= Right * velocity;
 		if (direction == RIGHT)
-			Position += Right * velocity;
+			Position += Right * velocity;*/
 	}
 
 	glm::vec3 GetCarPosition() {
@@ -136,6 +146,15 @@ private:
 		// Also re-calculate the Right and Up vector
 		Right = glm::normalize(glm::cross(Front, WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
+	}
+
+	void updateCarFront() {
+		// Calculate the new Front vector
+		glm::vec3 front;
+		front.x = cos(glm::radians(CarYaw)) * cos(glm::radians(0.0f));
+		front.y = sin(glm::radians(0.0f));
+		front.z = sin(glm::radians(CarYaw)) * cos(glm::radians(0.0f));
+		CarFront = glm::normalize(front);
 	}
 };
 

@@ -28,6 +28,7 @@ glm::mat4 myLookAt(glm::vec3 camPos, glm::vec3 targetPos, glm::vec3 up);
 // settings
 float SCR_WIDTH = 800;
 float SCR_HEIGHT = 600;
+bool cursor_locked = false;
 
 // timing
 float deltaTime = 0.0f;
@@ -35,7 +36,7 @@ float lastFrame = 0.0f;
 
 
 //camera
-CarCamera carCamera(glm::vec3(0.0f, 0.0f, 0.0f));
+CarCamera carCamera(glm::vec3(0.0f, 0.0f, 8.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -57,7 +58,6 @@ enum ActiveCamera {
 ActiveCamera activeCam = staticCam;
 Camera activeCamera = staticCamera;
 
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 
 
@@ -146,13 +146,13 @@ int main() {
 	 0.0f,  0.5f, 0.0f
 	};*/
 	glm::vec3 cubePositions[] = {
-	  glm::vec3(0.0f,  0.0f,  3.0f),
-	  glm::vec3(0.0f,  0.0f, -3.0f),
-	  glm::vec3(-1.5f, -2.2f, -2.5f),
-	  glm::vec3(-3.8f, -2.0f, -12.3f),
-	  glm::vec3(2.4f, -0.4f, -3.5f),
+	  glm::vec3(2.0f,  1.0f,  3.0f),
+	  glm::vec3(1.0f,  3.2f, -3.0f),
+	  glm::vec3(-1.5f, 2.2f, -2.5f),
+	  glm::vec3(-3.8f, 1.0f, -12.3f),
+	  glm::vec3(2.4f, 0.4f, -3.5f),
 	  glm::vec3(-1.7f,  3.0f, -7.5f),
-	  glm::vec3(1.3f, -2.0f, -2.5f),
+	  glm::vec3(1.3f, 5.2f, -2.5f),
 	  glm::vec3(1.5f,  2.0f, -2.5f),
 	  glm::vec3(1.5f,  0.2f, -1.5f),
 	  glm::vec3(-1.3f,  1.0f, -1.5f)
@@ -217,10 +217,18 @@ int main() {
 
 	// positions of the point lights
 	glm::vec3 pointLightPositions[] = {
-		glm::vec3(0.7f,  0.2f,  2.0f),
-		glm::vec3(2.3f, -3.3f, -4.0f),
-		glm::vec3(-4.0f,  2.0f, -12.0f),
-		glm::vec3(0.0f,  0.0f, -3.0f)
+		glm::vec3(7.0f,  2.0f,  7.0f),
+		glm::vec3(7.0f,  2.0f, -7.0f),
+		glm::vec3(-7.0f, 2.0f, -7.0f),
+		glm::vec3(-7.0f,  2.0f, 7.0f)
+	};
+
+	//sphere positions
+	glm::vec3 earthPositions[] = {
+		glm::vec3(8.0f,  1.0f,  8.0f),
+		glm::vec3(5.0f,  2.0f, -7.0f),
+		glm::vec3(-6.0f, 1.0f, -5.0f),
+		glm::vec3(-5.0f,  2.0f, 4.0f)
 	};
 
 	//unsigned int indices[] = {  // note that we start from 0!
@@ -302,8 +310,8 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load("C:\\Users\\Igor\\Desktop\\pictures\\belle2.png", &width, &height, &nrChannels, 0);
+	stbi_set_flip_vertically_on_load(false);
+	unsigned char *data = stbi_load("..\\OpenGLproject\\textures\\earth2048.bmp", &width, &height, &nrChannels, 0);
 	//let's try png
 	if (data)
 	{
@@ -325,7 +333,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	data = stbi_load("C:\\Users\\Igor\\Desktop\\pictures\\belle2upside.png", &width, &height, &nrChannels, 0);
+	data = stbi_load("..\\OpenGLproject\\textures\\road.jpg", &width, &height, &nrChannels, 0);
 	//let's try png
 	if (data)
 	{
@@ -360,6 +368,27 @@ int main() {
 	}
 	stbi_image_free(data);
 
+	unsigned int carTexture;
+	glActiveTexture(GL_TEXTURE3);
+	glGenTextures(1, &carTexture);
+	glBindTexture(GL_TEXTURE_2D, carTexture);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load road texture
+	data = stbi_load("..\\OpenGLproject\\textures\\red.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		//mipmaps
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 
 	//ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
 	//// either set it manually like so:
@@ -485,6 +514,18 @@ int main() {
 			activeShader.setFloat(("pointLights[" + number + "].quadratic").c_str(), 0.032f);
 		}
 
+		activeShader.setVec3("spotLight.position", carCamera.Position);
+		activeShader.setVec3("spotLight.direction", carCamera.Front);
+		activeShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		activeShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+		// spotLight properties
+		activeShader.setVec3("spotLight.ambient", 0.05f, 0.05f, 0.05f);
+		activeShader.setVec3("spotLight.diffuse", 0.8f, 0.8f, 0.8f);
+		activeShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+		activeShader.setFloat("spotLight.constant", 1.0f);
+		activeShader.setFloat("spotLight.linear", 0.09f);
+		activeShader.setFloat("spotLight.quadratic", 0.032f);
+
 		switch (lightingMode) {
 		case Blinn:
 			activeShader.setInt("mode", 1);
@@ -528,15 +569,14 @@ int main() {
 			break;
 		}
 
-		
-		//
-		activeShader.setInt("texture1", 0);
-		activeShader.setInt("texture2", 1);
-		//view = myLookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 		activeShader.setMat4("view", view);
 		projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 		activeShader.setMat4("projection", projection);
+		
+		//view = myLookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+		
 		glBindVertexArray(VAO);
+		activeShader.setInt("texture1", 1);
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
@@ -548,19 +588,20 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		glBindVertexArray(VAO);
 		//draw car
+		activeShader.setInt("texture1", 3);
 		glm::mat4 model = glm::mat4(1.0f);
 		//model = glm::scale(model, glm::vec3(1, 1, 2));
 		model = glm::translate(model, carCamera.GetCarPosition());
-		model = glm::rotate(model, -glm::radians(carCamera.Yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -glm::radians(carCamera.CarYaw), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(2, 1, 1));
 		activeShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//draw road
+		//draw floor
 		glBindVertexArray(roadVAO);
 		activeShader.setInt("texture1", 2);
-		activeShader.setInt("texture2", 2);
 		for (int i = -10; i < 11; i++)
 		{
 			for (int j = -10; j < 11; j++)
@@ -574,9 +615,20 @@ int main() {
 
 		//draw sphere
 		glBindVertexArray(spVAO);
+		activeShader.setInt("texture1", 0);
 		model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		activeShader.setMat4("model", model);
 		glDrawElements(GL_TRIANGLES, spVerSize * sizeof(float), GL_UNSIGNED_INT, &spIndices[0]);
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, earthPositions[i]);
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			activeShader.setMat4("model", model);
+			glDrawElements(GL_TRIANGLES, spVerSize * sizeof(float), GL_UNSIGNED_INT, &spIndices[0]);
+		}
 
 		// also draw the lamp object
 		lampShader.use();
@@ -696,6 +748,28 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 		lightingMode = Blinn;
 	}
+
+
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+		
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+		glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+		glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+		glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
+	}
+	
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
