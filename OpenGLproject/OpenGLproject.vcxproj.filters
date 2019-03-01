@@ -38,9 +38,6 @@
     <ClInclude Include="CarCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Car.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StaticCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,9 +45,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FollowCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SphereGenerator.h">
@@ -77,6 +71,13 @@
       <Filter>Shaders</Filter>
     </Text>
     <Text Include="Phong.fs.txt">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="Poradnik.txt" />
+    <Text Include="Gnome.vs.txt">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="Gnome.fs.txt">
       <Filter>Shaders</Filter>
     </Text>
   </ItemGroup>

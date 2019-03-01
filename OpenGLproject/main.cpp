@@ -8,6 +8,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <chrono>
+#include <stdlib.h>     
+#include <time.h> 
+#include <algorithm>
 #include "shader.h"
 #include "stb_image.h"
 #include "CarCamera.h"
@@ -22,8 +25,7 @@ void checkShaderProgramLinking(unsigned int shaderProgram);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow *window);
 glm::mat4 myLookAt(glm::vec3 camPos, glm::vec3 targetPos, glm::vec3 up);
-//notes
-//check on which gpu program runs
+
 
 // settings
 float SCR_WIDTH = 800;
@@ -36,7 +38,7 @@ float lastFrame = 0.0f;
 
 
 //camera
-CarCamera carCamera(glm::vec3(0.0f, 0.0f, 8.0f));
+CarCamera carCamera(glm::vec3(0.0f, 0.0f, 9.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -66,6 +68,8 @@ Shader phongPhongShader("..\\OpenGLproject\\Phong.vs.txt", "..\\OpenGLproject\\P
 Shader phongFlatShader("..\\OpenGLproject\\Flat.vs.txt", "..\\OpenGLproject\\Flat.fs.txt");
 Shader phongGouraudShader("..\\OpenGLproject\\Gouraud.vs.txt", "..\\OpenGLproject\\Gouraud.fs.txt");
 Shader lampShader("..\\OpenGLproject\\lamp.vs.txt", "..\\OpenGLproject\\lamp.fs.txt");
+Shader GnomeShader("..\\OpenGLproject\\Gnome.vs.txt", "..\\OpenGLproject\\Gnome.fs.txt");
+
 Shader activeShader(-1);
 
 enum LightingModeEnum {
@@ -74,29 +78,6 @@ enum LightingModeEnum {
 };
 
 LightingModeEnum lightingMode = Phong;
-
-//const char *vertexShaderSource = "#version 330 core\n"
-//"layout (location = 0) in vec3 aPos;\n"
-//"layout (location = 1) in vec2 aTexCoord;\n"
-//"out vec2 TexCoord;\n"
-//"uniform mat4 model;\n"
-//"uniform mat4 view;\n"
-//"uniform mat4 projection;\n"
-//"uniform mat4 transform;\n"
-//"void main()\n"
-//"{\n"
-//"   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-//"	TexCoord = aTexCoord;\n"
-//"}\0";
-//const char *fragmentShaderSource = "#version 330 core\n"
-//"in vec2 TexCoord;\n"
-//"uniform sampler2D texture1;\n"
-//"uniform sampler2D texture2;\n"
-//"out vec4 FragColor;\n"
-//"void main()\n"
-//"{\n"
-//"   FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5);\n"
-//"}\n\0";
 
 using std::string;
 
@@ -138,13 +119,10 @@ int main() {
 	phongFlatShader.load();
 	phongGouraudShader.load();
 	lampShader.load();
+	GnomeShader.load();
 	activeShader.ID = phongPhongShader.ID;
 
-	/*float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f,
-	 0.0f,  0.5f, 0.0f
-	};*/
+
 	glm::vec3 cubePositions[] = {
 	  glm::vec3(2.0f,  1.0f,  3.0f),
 	  glm::vec3(1.0f,  3.2f, -3.0f),
@@ -231,10 +209,18 @@ int main() {
 		glm::vec3(-5.0f,  2.0f, 4.0f)
 	};
 
-	//unsigned int indices[] = {  // note that we start from 0!
-	//2, 1, 0,   // first triangle
-	//3, 2, 0    // second triangle
-	//};
+	srand(time(NULL));
+	std::vector<std::pair<int, int>> gnomePositions;
+	for (int i = -10; i < 11; i++)
+	{
+		for (int j = -10; j < 11; j++)
+		{
+			if (rand() % 5 == 0) {
+				gnomePositions.push_back(std::make_pair(i, j));
+			}
+		
+		}
+	}
 
 	//vertex array objects and vertex buffer objects
 	unsigned int VBO, VAO, EBO;
@@ -251,9 +237,7 @@ int main() {
 
 	//index,size,flag,flag,stride,offset
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
-	glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(0);;
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
@@ -274,32 +258,6 @@ int main() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	
-	/*unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	checkShaderCompilation(vertexShader);
-
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	checkShaderCompilation(fragmentShader);
-
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	checkShaderProgramLinking(shaderProgram);
-	*/
-	//cleanup, after linking delete shader objects
-	//glDeleteShader(vertexShader);
-	//glDeleteShader(fragmentShader);
-
-
-
 	unsigned int texture1, texture2;
 	glGenTextures(1, &texture1);
 	glActiveTexture(GL_TEXTURE0);
@@ -312,7 +270,6 @@ int main() {
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(false);
 	unsigned char *data = stbi_load("..\\OpenGLproject\\textures\\earth2048.bmp", &width, &height, &nrChannels, 0);
-	//let's try png
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -334,7 +291,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	data = stbi_load("..\\OpenGLproject\\textures\\road.jpg", &width, &height, &nrChannels, 0);
-	//let's try png
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -355,7 +311,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load road texture
 	data = stbi_load("..\\OpenGLproject\\textures\\wood.png", &width, &height, &nrChannels, 0);
 	if (data)
 	{
@@ -377,7 +332,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load road texture
 	data = stbi_load("..\\OpenGLproject\\textures\\red.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
@@ -390,6 +344,48 @@ int main() {
 	}
 	stbi_image_free(data);
 
+	//load gnomes
+	unsigned int gnomes[2];
+	glGenTextures(2, gnomes);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, gnomes[0]);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	stbi_set_flip_vertically_on_load(false);
+	data = stbi_load("..\\OpenGLproject\\textures\\Gnome.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		//mipmaps
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, gnomes[1]);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	stbi_set_flip_vertically_on_load(true);
+	data = stbi_load("..\\OpenGLproject\\textures\\gnomed.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		//mipmaps
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 	//ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
 	//// either set it manually like so:
 	//glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
@@ -422,46 +418,6 @@ int main() {
 	glEnableVertexAttribArray(2);
 	int spVerSize = spVertices.size();
 
-
-	//create lamp sphere
-	//spVertices.clear();
-	//spNormals.clear();
-	//spTexCoords.clear();
-	//std::vector<int> spLampIndices;
-	//GenerateSphere(spVertices, spTexCoords, spLampIndices, spNormals,0.5f,9,18);
-
-	//joinSpVTex.clear();
-	//joinSpVTex.insert(joinSpVTex.end(), spVertices.begin(), spVertices.end());
-	//joinSpVTex.insert(joinSpVTex.end(), spTexCoords.begin(), spTexCoords.end());
-	//unsigned int spLampVBO, spLampVAO;
-	//glGenBuffers(1, &spLampVBO);
-	//glGenVertexArrays(1, &spLampVAO);
-	//glBindVertexArray(spLampVAO);
-	//glBindBuffer(GL_ARRAY_BUFFER, spLampVBO);
-	//glBufferData(GL_ARRAY_BUFFER, joinSpVTex.size() * sizeof(float), &(joinSpVTex[0]), GL_STATIC_DRAW);
-	////index,size,flag,flag,stride,offset
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(sizeof(float) * spVertices.size()));
-	//glEnableVertexAttribArray(1);
-	//int spLampVerSize = spVertices.size();
-
-	//// second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
-	//unsigned int lightVAO;
-	//glGenVertexArrays(1, &lightVAO);
-	//glBindVertexArray(lightVAO);
-	//// we only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need (it's already bound, but we do it again for educational purposes)
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(0);
-
-
-
-	//glm::mat4 view = glm::mat4(1.0f);
-	////3D part
-	// note that we're translating the scene in the reverse direction of where we want to move
-	//view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	//view = glm::rotate(view, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 projection;
 	projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 	activeShader.use();
@@ -514,11 +470,11 @@ int main() {
 			activeShader.setFloat(("pointLights[" + number + "].quadratic").c_str(), 0.032f);
 		}
 
+		// spotLight properties
 		activeShader.setVec3("spotLight.position", carCamera.Position);
 		activeShader.setVec3("spotLight.direction", carCamera.Front);
 		activeShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
 		activeShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-		// spotLight properties
 		activeShader.setVec3("spotLight.ambient", 0.05f, 0.05f, 0.05f);
 		activeShader.setVec3("spotLight.diffuse", 0.8f, 0.8f, 0.8f);
 		activeShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
@@ -535,22 +491,7 @@ int main() {
 			break;
 		}
 
-		//set light attribs
-		//activeShader.setVec3("light.position", lightPos);
-		//activeShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
-		//activeShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken the light a bit to fit the scene
-		//activeShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-		//activeShader.setFloat("light.constant", 1.0f);
-		//activeShader.setFloat("light.linear", 0.09f);
-		//activeShader.setFloat("light.quadratic", 0.032f);
-		//glm::mat4 trans = glm::mat4(1.0f);
-		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-		//trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		//ourShader.setMat4("transform", trans);
-		//model = glm::rotate(model, (float)glm::radians((float)((int)glfwGetTime()%360)), glm::vec3(1.0f, 0.0f, 0.0f));
-		/*float radius = 10.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;*/
+
 		glm::mat4 view;
 		switch (activeCam) {
 		case staticCam:
@@ -573,7 +514,6 @@ int main() {
 		projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 		activeShader.setMat4("projection", projection);
 		
-		//view = myLookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 		
 		glBindVertexArray(VAO);
 		activeShader.setInt("texture1", 1);
@@ -599,28 +539,60 @@ int main() {
 		activeShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		
+		
+		//gnomes
+		if (activeShader.ID == GnomeShader.ID) {
+			activeShader.setInt("texture1", 6);
+			
+			glBindVertexArray(VAO);
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model,glm::vec3(0.0f,-5.0f,0.0f));
+			model = glm::scale(model, glm::vec3(2, 1, 1));
+			activeShader.setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+			activeShader.setInt("texture1", 2);
+			activeShader.setInt("texture2", 5);
+		}
+
 		//draw floor
 		glBindVertexArray(roadVAO);
 		activeShader.setInt("texture1", 2);
+		
 		for (int i = -10; i < 11; i++)
 		{
 			for (int j = -10; j < 11; j++)
 			{
+				//gnomes
+				if (activeShader.ID == GnomeShader.ID) {
+					if (std::find(gnomePositions.begin(), gnomePositions.end(), std::make_pair(i, j)) != gnomePositions.end())
+					{
+						activeShader.setInt("gnomeshere", 1);
+					}
+					else {
+						activeShader.setInt("gnomeshere", 0);
+					}
+				}
 				model = glm::mat4(1.0f);
 				model = glm::translate(model, glm::vec3((float)i, 0.0f, (float)j));
 				activeShader.setMat4("model", model);
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, roadIndices);
 			}
 		}
+		
 
-		//draw sphere
+		//draw sphere (in the center)
 		glBindVertexArray(spVAO);
+		activeShader.setInt("sphere", 1);
 		activeShader.setInt("texture1", 0);
 		model = glm::mat4(1.0f);
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		activeShader.setMat4("model", model);
 		glDrawElements(GL_TRIANGLES, spVerSize * sizeof(float), GL_UNSIGNED_INT, &spIndices[0]);
-
+		activeShader.setInt("sphere", 0);
+		//draw earths
 		for (size_t i = 0; i < 4; i++)
 		{
 			model = glm::mat4(1.0f);
@@ -645,12 +617,23 @@ int main() {
 			lampShader.setMat4("model", model);
 			glDrawElements(GL_TRIANGLES, spVerSize * sizeof(float), GL_UNSIGNED_INT, &spIndices[0]);
 		}
-		//float timeValue = glfwGetTime();
-		//float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		//glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+		//gnome
+		if (activeShader.ID == GnomeShader.ID) {
+			for (size_t i = 0; i < gnomePositions.size(); i++)
+			{
+				if (((carCamera.Position.x - gnomePositions[i].first)*(carCamera.Position.x - gnomePositions[i].first) +
+					(carCamera.Position.z - gnomePositions[i].second)*(carCamera.Position.z - gnomePositions[i].second)) < 0.25f) {
+					//gnomed
+					carCamera.MovementSpeed = 0.0f;
+					carCamera.MouseSensitivity = 0.0f;
+					carCamera.Yaw = -90.0f;
+					carCamera.Pitch = 0.0f;
+					carCamera.Position = glm::vec3(0.0f, -5.0f, 3.0f);
+				}
+
+			}
+		}
 
 		//double buffering prevents flickering, swaps buffer and presents the ready one
 		glfwSwapBuffers(window);
@@ -659,10 +642,6 @@ int main() {
 	}
 	//cleanup
 	glfwTerminate();
-
-
-	//glfw callback should call this when displaying window
-	//glViewport(0, 0, win_width, win_height);
 
 
 	return 0;
@@ -749,6 +728,11 @@ void processInput(GLFWwindow *window)
 		lightingMode = Blinn;
 	}
 
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		activeShader = GnomeShader.ID;
+		carCamera.Position = glm::vec3(0.0f, 0.0f, 9.0f);
+	}
+
 
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 		
@@ -789,34 +773,3 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 	carCamera.ProcessMouseMovement(xoffset, yoffset);
 }
-
-
-
-//{
-//	glm::vec3 cameraDirection = glm::normalize(camPos - targetPos);
-//	glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-//	glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-//	glm::mat4 cameraSpace = glm::mat4();
-//	cameraSpace[0].x = cameraDirection.x;
-//	cameraSpace[1].x = cameraDirection.y;
-//	cameraSpace[2].x = cameraDirection.z;
-//	cameraSpace[0].y = cameraRight.x;
-//	cameraSpace[1].y = cameraRight.y;
-//	cameraSpace[2].y = cameraRight.z;
-//	cameraSpace[0].z = cameraUp.x;
-//	cameraSpace[1].z = cameraUp.y;
-//	cameraSpace[2].z = cameraUp.z;
-//	cameraSpace[0].w = 1.0f;
-//	cameraSpace[1].w = 1.0f;
-//	cameraSpace[2].w = 1.0f;
-//	cameraSpace[3].w = 1.0f;
-//	glm::mat4 cameraPosition = glm::mat4(1.0f);
-//	cameraPosition[0].w = -camPos.x;
-//	cameraPosition[1].w = -camPos.y;
-//	cameraPosition[2].w = -camPos.z;
-//	glm::mat4 lookAt = cameraSpace * cameraPosition;
-//	glm::mat4 lookAt2 = glm::lookAt(camPos, targetPos, up);
-//	if (lookAt == lookAt2) {
-//		int a = 2;
-//	}
-//	return lookAt;

@@ -1,0 +1,28 @@
+Skróty klawiszowe:
+	Prze³¹czanie widoku:
+		1 = Kamera statyczna
+		2 = Kamera wodz¹ca za samochodem
+		3 = Kamera na samochodzie
+
+	Zmiana trybu cieniowania:
+		4 = P³askie
+		5 = Gourauda 
+		6 = Phonga 
+
+	Zmiana modelu oœwietlenia:
+		f = model Phonga
+		g = model Blinna
+	
+	Opcje Okna:
+		q = pe³en ekran
+		e = zablokuj kursor w oknie
+		r = poka¿ kursor
+
+	Spacja:
+		W³¹cza tryb gry w którym musimy unikaæ gnomów nadrukowanych na pod³ogê, gonmy s¹ widoczne tylko w œwietle latarki. Po wejœciu na gnoma przegrywamy.
+		Aby móc dalej testowaæ aplikacjê po przegranej nale¿y zrestartowaæ aplikacjê.
+
+
+ESC = Zamyka grê
+
+Poruszanie mysz¹ zmienia kierunek œwiecenia latarki osadzonej na samochodzie;

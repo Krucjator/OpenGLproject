@@ -127,11 +127,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Car.h" />
     <ClInclude Include="CarCamera.h" />
     <ClInclude Include="FollowCamera.h" />
     <ClInclude Include="MyLookAt.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="SphereGenerator.h" />
     <ClInclude Include="StaticCamera.h" />
@@ -140,10 +138,13 @@
   <ItemGroup>
     <Text Include="Flat.fs.txt" />
     <Text Include="Flat.vs.txt" />
+    <Text Include="Gnome.fs.txt" />
+    <Text Include="Gnome.vs.txt" />
     <Text Include="Gouraud.fs.txt" />
     <Text Include="Gouraud.vs.txt" />
     <Text Include="Phong.fs.txt" />
     <Text Include="Phong.vs.txt" />
+    <Text Include="Poradnik.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGLproject.rc" />
