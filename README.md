@@ -1,2 +1,2 @@
 # OpenGLproject
-Learning basics of the OpenGL, largely following https://learnopengl.com/Getting-started/OpenGL
+Learning basics of the OpenGL, mainly following https://learnopengl.com/Getting-started/OpenGL
